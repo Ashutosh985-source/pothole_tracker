@@ -1,29 +1,32 @@
 import cv2
 
-def detect_pothole(image_path):
-    img = cv2.imread(image_path)
 
-    if img is None:
-        return False, None
+class PotholeDetector:
 
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    edges = cv2.Canny(blur, 50, 150)
+    def detect(self, image_path):
+        img = cv2.imread(image_path)
 
-    contours, _ = cv2.findContours(
-        edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-    )
+        if img is None:
+            return False, None
 
-    pothole_detected = False
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blur, 50, 150)
 
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
+        contours, _ = cv2.findContours(
+            edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
 
-        if area > 500:
-            pothole_detected = True
-            x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(
-                img, (x, y), (x + w, y + h), (0, 255, 0), 2
-            )
+        detected = False
 
-    return pothole_detected, img
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+
+            if area > 500:
+                detected = True
+                x, y, w, h = cv2.boundingRect(cnt)
+                cv2.rectangle(
+                    img, (x, y), (x + w, y + h), (0, 255, 0), 2
+                )
+
+        return detected, img
